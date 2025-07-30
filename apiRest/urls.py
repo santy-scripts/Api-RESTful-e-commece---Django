@@ -1,5 +1,5 @@
 """
-URL configuration for restapi project.
+URL configuration for apiRest project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
@@ -18,17 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from rest_framework import routers
-from restapi.apps.users import views # Importa las vistas de los usuarios
-
-router = routers.DefaultRouter() # Crea un enrutador por defecto
-router.register(r'users', views.UserViewSet)  # Registra el UserViewSet
-router.register(r'groups', views.GroupViewSet)  # Registra el GroupViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(router.urls)),  # Incluye las URLs del enrutador
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')) # Incluye las URLs de autenticación de DRF
+    path('', include('apps.apiApp.urls')),  
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Configura las URLs para servir archivos multimedia
+
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
