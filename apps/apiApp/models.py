@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
@@ -22,7 +23,7 @@ class Category(models.Model):
     # Imagen opcional para la categoría
     image = models.ImageField(upload_to='category_img', blank=True, null=True)
 
-    #funcion para mostrar el nombre de la categoría en /admin
+    #metodo para mostrar el nombre de la categoría en /admin
     def __str__(self):
         return self.name
 
@@ -38,6 +39,18 @@ class Product(models.Model):
     # llave primaria que relaciona el produto a una categoria
     category = models.ForeignKey(Category, related_name='products', on_delete=models.SET_NULL, blank=True, null=True)
 
-    #funcion para mostrar el nombre del producto en /admin
+    #metodo para mostrar el nombre del producto en /admin
     def __str__(self):
         return self.name
+    
+    
+    # Sobrescribimos el método save del modelo para personalizar el guardado
+    def save(self, *args, **kwargs):
+        # Si el campo 'slug' está vacío (es decir, aún no se ha definido)
+        if not self.slug:
+            # Generamos un slug automáticamente a partir del nombre del producto
+            # Ej: "Cámara Canon" -> "camara-canon"
+            self.slug = slugify(self.name)
+
+        # Llamamos al método save original de la clase padre para que guarde el objeto normalmente
+        super().save(*args, **kwargs)
