@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import CharField
 from django.utils.text import slugify
 from django.contrib.auth.models import AbstractUser
 
@@ -19,14 +20,19 @@ class CustomUser(AbstractUser):
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True, blank=True)
     # Imagen opcional para la categoría
     image = models.ImageField(upload_to='category_img', blank=True, null=True)
 
     #metodo para mostrar el nombre de la categoría en /admin
     def __str__(self):
         return self.name
-
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+            
+        super().save(*args, **kwargs)
 
 #clase producto
 class Product(models.Model):
@@ -48,9 +54,29 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         # Si el campo 'slug' está vacío (es decir, aún no se ha definido)
         if not self.slug:
+            self.slug = slugify(self.name)
             # Generamos un slug automáticamente a partir del nombre del producto
             # Ej: "Cámara Canon" -> "camara-canon"
-            self.slug = slugify(self.name)
 
         # Llamamos al método save original de la clase padre para que guarde el objeto normalmente
         super().save(*args, **kwargs)
+
+
+#Modelo para carrito de compras
+class Cart(models.Model):
+    cart_code = models.CharField(max_length=11, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.cart_code
+    
+    
+#Modelo para los items del carrito
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cartitems")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="item")
+    quantity = models.IntegerField(default=1)
+    
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name} in {self.cart.cart_code}"
